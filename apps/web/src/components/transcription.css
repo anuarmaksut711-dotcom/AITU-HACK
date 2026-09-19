@@ -1,0 +1,18 @@
+@layer layout {
+  .source-picker { max-width: 100%; margin-bottom: var(--mantine-spacing-lg); }
+  .audio-file-control { display: flex; flex-wrap: wrap; align-items: center; gap: var(--mantine-spacing-sm); }
+  .audio-filename { min-width: 0; overflow-wrap: anywhere; }
+  .transcription-state { display: grid; justify-items: start; gap: var(--mantine-spacing-sm); margin-bottom: var(--mantine-spacing-lg); }
+  .transcription-progress { width: 100%; }
+  .transcript-segments { margin: var(--mantine-spacing-lg) 0; }
+  .transcript-segments li { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: var(--mantine-spacing-md); margin: var(--mantine-spacing-md) 0; }
+  .transcript-segments ol { padding: 0; }
+  .transcript-segments time { color: var(--mantine-color-dimmed); font-variant-numeric: tabular-nums; }
+  .transcript-segments p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+}
+
+@layer responsive {
+  @media (max-width: 380px) {
+    .source-picker .mantine-SegmentedControl-label { padding-inline: 8px; font-size: 12px; }
+  }
+}

@@ -1,0 +1,163 @@
+.meeting-board { display: grid; gap: 20px; margin-bottom: 24px; min-width: 0; }
+.board-heading { display: flex; justify-content: space-between; gap: 22px; flex-wrap: wrap; align-items: flex-start; }
+.board-heading > div:first-child { flex: 1 1 320px; }
+.board-eyebrow { display: flex; gap: 8px; align-items: center; color: var(--mantine-color-forest-7); font-size: 11px; font-weight: 700; letter-spacing: .12em; margin-bottom: 10px; }
+.board-heading h2 { margin-bottom: 8px; }
+.board-actions, .board-tools, .board-exports { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.board-tools { justify-content: space-between; }
+.board-intro { display: flex; align-items: flex-start; gap: 16px; border: 1px dashed var(--mantine-color-gray-4); padding: 24px; border-radius: 12px; background: var(--mantine-color-gray-0); }
+.board-progress { display: grid; gap: 8px; }
+.board-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.board-metrics > div { display: flex; align-items: center; gap: 10px; padding: 18px; border-right: 1px solid var(--line); flex-wrap: wrap; }
+.board-metrics > div:last-child { border: none; }
+.board-metrics strong { font-size: 23px; font-weight: 600; }
+.board-metrics span { color: var(--muted); font-size: 12px; }
+.metric-late, .card-overdue { color: var(--mantine-color-red-8); }
+.board-filters { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.board-filters > .mantine-TextInput-root { flex: 1 1 180px; }
+.board-filters > .mantine-Select-root { flex: 0 1 190px; }
+.kanban-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.kanban-grid.content-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.kanban-column { background: var(--mantine-color-gray-0); border: 1px solid var(--line); border-radius: 12px; padding: 12px; min-width: 0; min-height: 260px; }
+.kanban-column > header { display: flex; align-items: center; gap: 8px; min-height: 28px; margin: 0 2px 16px; }
+.kanban-column h3 { overflow-wrap: anywhere; }
+.column-dot { width: 7px; height: 7px; background: #87928e; border-radius: 50%; flex-shrink: 0; }
+.column-doing .column-dot, .column-topic .column-dot { background: #5379bc; }
+.column-blocked .column-dot, .column-risk .column-dot { background: #c56a52; }
+.column-done .column-dot, .column-decision .column-dot { background: #558164; }
+.column-question .column-dot { background: #a77bba; }
+.column-count { font-size: 12px; margin-left: auto; color: var(--muted); padding: 2px 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 5px; }
+.column-empty { font-size: 12px; text-align: center; color: var(--muted); padding: 40px 8px; }
+.kanban-card { background: var(--surface); border: 1px solid var(--line); padding: 14px; border-radius: 9px; display: grid; gap: 12px; margin-bottom: 10px; box-shadow: 0 2px 3px #14291e04; overflow-wrap: anywhere; min-width: 0; }
+.kanban-card[draggable='true'] { cursor: grab; }
+.kanban-card:hover { border-color: var(--mantine-color-gray-5); }
+.card-badges { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.card-badges .mantine-Badge-root { max-width: 100%; }
+.card-grip { margin-left: auto; color: var(--mantine-color-gray-5); }
+.card-title { font: inherit; font-weight: 600; font-size: 14px; line-height: 1.55; color: var(--ink); background: transparent; border: 0; padding: 0; text-align: left; cursor: pointer; overflow-wrap: anywhere; }
+.card-title:hover { color: var(--mantine-color-forest-7); }
+.card-description { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.card-meta { display: grid; gap: 6px; font-size: 12px; }
+.card-review { border-top: 1px solid var(--line); padding-top: 10px; }
+.kanban-card blockquote, .board-summary blockquote { margin: 8px 0; padding-left: 10px; border-left: 2px solid var(--line); white-space: pre-wrap; font-size: 12px; }
+.kanban-card summary { font-size: 12px; cursor: pointer; }
+.drop-target { outline: 2px solid var(--mantine-color-forest-6); background: var(--mantine-color-forest-0); }
+.board-summary { display: grid; gap: 20px; max-width: 900px; padding: 20px; background: var(--mantine-color-gray-0); border-radius: 12px; }
+.card-editor { display: grid; gap: 18px; }
+.board-clarification-summary { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.card-clarifications { margin: 0; padding-left: 18px; }
+.card-revisions { margin: 8px 0; padding-left: 18px; display: grid; gap: 18px; }
+.card-revisions blockquote { margin: 8px 0; padding-left: 10px; border-left: 2px solid var(--line); white-space: pre-wrap; font-size: 12px; }
+.meeting-evidence, .evidence-audio { display: grid; gap: 14px; min-width: 0; }
+.evidence-context { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; max-height: 45vh; overflow: auto; padding: 16px; background: var(--mantine-color-gray-0); border-radius: 8px; }
+.evidence-context mark { background: var(--mantine-color-yellow-2); color: var(--ink); }
+.evidence-audio audio { width: 100%; }
+.editor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.board-print { display: none; }
+@media (max-width: 1500px) { .kanban-grid.content-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 1200px) { .kanban-grid, .kanban-grid.content-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .board-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .board-metrics > div:nth-child(2) { border-right: none; } .board-metrics > div:nth-child(-n+2) { border-bottom: 1px solid var(--line); } }
+@media (max-width: 600px) {
+  .kanban-grid, .kanban-grid.content-grid { grid-template-columns: minmax(0, 1fr); }
+  .kanban-column { min-height: 150px; }
+  .board-metrics > div { padding: 12px; gap: 6px; }
+  .board-metrics svg { display: none; }
+  .board-tools .mantine-SegmentedControl-root { display: flex; flex-direction: column; width: 100%; }
+  .board-filters > .mantine-TextInput-root, .board-filters > .mantine-Select-root { flex-basis: 100%; max-width: 100%; }
+  .editor-grid { grid-template-columns: minmax(0, 1fr); }
+  .board-heading > div:first-child { flex-basis: 100%; }
+  .board-intro { padding: 16px; }
+}
+@media print {
+  @page { margin: 18mm; }
+  .sidebar, .page-back, .page > .page-header, .page > .transcript-panel:not(.meeting-board), .skip-link { display: none !important; }
+  .app-shell, .page { display: block !important; padding: 0 !important; margin: 0 !important; }
+  .meeting-board { display: block; border: 0; padding: 0 !important; }
+  .meeting-board > :not(.board-print) { display: none !important; }
+  .meeting-board .board-print { display: block; color: #111; font-size: 10pt; }
+  .board-print h1 { font-size: 20pt; margin-bottom: 18px; }
+  .board-print h2 { font-size: 15pt; margin: 22px 0 12px; }
+  .board-print h3 { font-size: 11pt; margin: 12px 0 6px; }
+  .board-print article { break-inside: avoid; padding-bottom: 12px; border-bottom: 1px solid #ddd; }
+  .board-print p { margin: 6px 0; }
+  .board-print blockquote { margin: 10px 0; padding-left: 12px; border-left: 2px solid #aaa; white-space: pre-wrap; }
+}
+/* Accepted ImageGen direction: quiet tools, pastel lanes, source-backed notes. */
+.meeting-board.transcript-panel { border: 0; padding: 0; gap: 18px; }
+.board-heading h2 { font-size: 26px; letter-spacing: -.035em; margin-bottom: 4px; }
+.board-heading { align-items: center; gap: 14px; }
+.board-tally { margin-top: -6px; }
+.kanban-column { border: 0; padding: 12px 10px; min-height: 420px; background: #eef2f2; }
+.column-todo, .column-task { background: #edf2f4; }
+.column-doing, .column-topic { background: #f7f1e7; }
+.column-blocked, .column-risk { background: #faece9; }
+.column-done, .column-decision { background: #eaf3ec; }
+.column-question { background: #f2edf6; }
+.kanban-column > header { margin-bottom: 14px; min-height: 30px; }
+.column-dot { display: none; }
+.column-count { background: transparent; border: 0; }
+.kanban-card { padding: 16px 14px; gap: 15px; border-color: #e1e5e0; box-shadow: none; }
+.card-title { font-size: 15px; line-height: 1.5; }
+.card-badges:has(> .card-grip:only-child) { height: 4px; }
+.card-grip { opacity: .45; }
+.card-meta { gap: 14px; }
+.card-person, .card-date { display: flex; align-items: center; gap: 9px; }
+.card-date { color: var(--muted); }
+.card-date.card-overdue { color: var(--mantine-color-red-8); }
+.card-review { border: 0; padding: 0; }
+.board-more-filters { flex: 1 1 100%; }
+.board-filter-options { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 12px 0; }
+.board-filter-options > .mantine-Select-root { width: 190px; }
+@media (max-width: 600px) {
+  .board-heading h2 { font-size: 24px; }
+  .kanban-column { min-height: 145px; }
+  .board-filter-options { align-items: flex-start; flex-direction: column; }
+}
+@media print { .meeting-board.transcript-panel { padding: 0 !important; } }
+.card-clarifications-alert .mantine-Alert-label { color: #8a3511; }
+/* One compact action row, using the same Mantine controls as the workspace. */
+.board-toolbar { display: flex; align-items: center; gap: 8px; min-width: 0; max-width: 100%; overflow-x: auto; padding: 2px 1px 6px; }
+.board-toolbar > * { flex-shrink: 0; }
+.board-toolbar .board-grouping { width: 210px; }
+.board-toolbar .board-search { flex: 1 0 160px; min-width: 160px; }
+.board-filter-fields { display: grid; gap: 14px; }
+.board-filter-popover { max-width: calc(100vw - 24px); }
+.card-drag-handle { margin-left: auto; flex-shrink: 0; cursor: grab; touch-action: none; color: #677c70; }
+.card-drag-handle:hover { color: #215c49; background: #edf5ef; }
+.card-drag-handle:active { cursor: grabbing; }
+.card-drag-handle:focus-visible { outline: 2px solid #347358; outline-offset: 2px; }
+.kanban-card.card-dragging { opacity: .3; border-style: dashed; }
+.kanban-column { position: relative; transition: box-shadow 120ms ease, background-color 120ms ease; }
+.kanban-column.drop-target { outline: 2px solid #347358; outline-offset: -2px; background: #dcece1; }
+.board-drop-hint { border: 1px dashed #477d60; border-radius: 8px; padding: 18px 10px; margin-top: 10px; text-align: center; font-size: 12px; color: #215c49; }
+.kanban-drag-preview { display: grid; gap: 10px; padding: 18px; background: #fffefa; border: 1px solid #477d60; border-radius: 10px; box-shadow: 0 12px 32px #123b2f26; cursor: grabbing; overflow-wrap: anywhere; }
+.kanban-drag-preview strong { font-size: 14px; line-height: 1.5; }
+.kanban-drag-preview span { font-size: 12px; color: #4e6458; }
+@media (pointer: coarse) { .card-drag-handle { width: 36px; height: 36px; } }
+@media (prefers-reduced-motion: reduce) { .kanban-column { transition: none; } }
+@media print { .card-drag-handle, .kanban-drag-preview, .board-drop-hint { display: none !important; } }
+.card-editor-modal { display: flex; flex-direction: column; max-height: calc(100dvh - 32px); }
+.card-editor-modal-header { padding: 20px 28px; flex-shrink: 0; border-bottom: 1px solid var(--line); }
+.card-editor-modal-header .mantine-Modal-title { font-size: 21px; font-weight: 600; }
+.card-editor-modal-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+.card-editor.card-editor-wide { display: flex; flex-direction: column; gap: 0; width: 100%; min-width: 0; min-height: 0; }
+.card-editor-scroll { display: flex; flex-direction: column; flex: 1; gap: 20px; padding: 24px 28px; overflow-y: auto; min-height: 0; }
+.card-editor-scroll > * { flex-shrink: 0; }
+.card-editor-columns { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+.card-editor-section { display: grid; gap: 16px; min-width: 0; }
+.card-editor-columns .editor-grid { gap: 12px; min-width: 0; }
+.card-editor-source { display: flex; justify-content: flex-start; }
+.card-editor-wide .card-clarifications { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; }
+.card-editor-footer { flex-shrink: 0; padding: 16px 28px; border-top: 1px solid var(--line); background: var(--surface); }
+@media (max-width: 700px) {
+  .card-editor-modal-header { padding: 16px; }
+  .card-editor-scroll { padding: 18px 16px; gap: 16px; }
+  .card-editor-columns { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .card-editor-wide .card-clarifications { grid-template-columns: 1fr; }
+  .card-editor-footer { padding: 12px 16px; gap: 8px; flex-wrap: wrap; }
+  .card-editor-footer .mantine-Button-root { flex: 1 1 auto; font-size: 13px; padding-inline: 12px; }
+}
+
+.card-editor-section-label { letter-spacing: .06em; text-transform: uppercase; margin-bottom: -4px; }
+.card-editor-clarifications .mantine-Accordion-control { font-size: 13px; color: var(--mantine-color-gray-7); min-height: 42px; }
+.card-editor-clarifications .mantine-Accordion-label { padding-block: 10px; }
+.card-editor-clarifications .mantine-Accordion-panel { font-size: 13px; color: var(--mantine-color-gray-7); }

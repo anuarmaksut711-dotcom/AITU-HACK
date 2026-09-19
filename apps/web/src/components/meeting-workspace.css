@@ -1,0 +1,37 @@
+.saved-meeting-shell { width: 100%; max-width: 1800px; min-width: 0; margin: 0 auto; }
+.saved-meeting-shell > .page-back { margin: 0 0 22px; }
+.saved-meeting-header { margin-bottom: 8px; }
+.saved-meeting-actions { justify-content: flex-end; max-width: 100%; }
+.saved-meeting-header .live-status { flex-wrap: wrap; font-size: 13px; }
+.meeting-workspace { width: 100%; min-width: 0; }
+.saved-meeting-tabs .mantine-Tabs-list { margin-bottom: 22px; flex-wrap: nowrap; }
+.saved-meeting-tabs .mantine-Tabs-panel { min-width: 0; }
+.saved-meeting-pane { max-height: calc(100dvh - 240px); min-height: min(480px, 60dvh); }
+.saved-transcript { padding: 24px 26px; }
+.saved-utterance:focus, .saved-transcript:focus { outline: 1px solid #93bea6; background: #edf5ef; }
+.saved-meeting-chat { margin-top: 28px; }
+.saved-meeting-chat .rag-chat { margin-top: 12px; border: 0; padding: 16px 0; }
+.saved-insight-note { grid-template-columns: 62px minmax(0, 1fr); align-items: start; }
+.saved-insight-source { display: grid; gap: 8px; min-width: 0; margin-top: 14px; }
+.saved-insight-source blockquote { margin: 0; padding: 10px 14px; border-left: 2px solid #93bea6; background: #f3f6f0; border-radius: 0 7px 7px 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.65; font-size: 15px; }
+.saved-insight-source .live-source-link { font-size: 13px; white-space: normal; }
+.meeting-source-highlight { color: inherit; background: #ffeba3; border-radius: 2px; }
+.meeting-processing { padding-bottom: 10px; }
+.meeting-workspace .audio-source { padding: 0 24px 16px; margin-top: 0; }
+.embedded-board .board-heading { justify-content: flex-end; }
+.board-heading-hidden { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 760px) {
+  .saved-insight-note { grid-template-columns: 36px minmax(0, 1fr); }
+  .saved-meeting-header { grid-template-columns: minmax(0, 1fr); }
+  .saved-meeting-actions { justify-self: start; justify-content: flex-start; }
+  .saved-meeting-tabs .mantine-Tabs-list { gap: 6px; }
+  .saved-meeting-tabs .mantine-Tabs-tab { padding: 12px 10px; font-size: 15px; }
+  .saved-meeting-pane { max-height: calc(100dvh - 275px); min-height: 260px; padding-left: 0; padding-right: 0; }
+  .saved-transcript { padding: 16px 12px; font-size: 16px; }
+  .meeting-workspace .audio-source { padding: 0 0 14px; }
+}
+@media print {
+  .saved-meeting-shell > .page-back, .saved-meeting-header, .meeting-processing,
+  .saved-meeting-tabs > .mantine-Tabs-list, .saved-conversation, .saved-insights { display: none !important; }
+  .saved-meeting-shell, .meeting-workspace, .saved-meeting-tabs, .saved-meeting-pane, .saved-kanban { display: block !important; height: auto !important; max-height: none !important; overflow: visible !important; padding: 0 !important; margin: 0 !important; }
+}

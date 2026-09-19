@@ -1,0 +1,77 @@
+name: Validate
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.6-pg17@sha256:cf134a767f474095eeba57e0117be8e568e011a63f33fbf252f14c9b760f8e6f
+        env:
+          POSTGRES_USER: aimeet
+          POSTGRES_PASSWORD: ci-only-test-password
+          POSTGRES_DB: aimeet_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U aimeet -d aimeet_test"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://aimeet:ci-only-test-password@localhost:5432/aimeet_test
+      DATABASE_URL: postgresql+psycopg://aimeet:ci-only-test-password@localhost:5432/aimeet_test
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.8.22'
+          python-version: '3.12'
+      - run: uv sync --frozen --group dev
+      - run: uv run ruff check .
+      - run: uv run pytest
+      - run: uv run alembic upgrade head && uv run alembic check
+      - run: uv run python -m aimeet_api.export_openapi --output ../../packages/contracts/openapi.json
+      - run: git diff --exit-code -- ../../packages/contracts/openapi.json
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run generate:api && git diff --exit-code -- src/lib/api.generated.d.ts
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: make up
+      - run: npm ci
+        working-directory: apps/web
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - run: python3 scripts/test-e2e.py
+      - if: failure()
+        run: docker compose ps && docker compose logs --tail=80 api web migrate
+      - if: always()
+        run: docker compose down

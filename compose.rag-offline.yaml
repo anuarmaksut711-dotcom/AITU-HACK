@@ -1,0 +1,66 @@
+# Docker Compose >= 2.24.4. Preload models before starting this isolated profile.
+# Supply OLLAMA_IMAGE pinned to the version/digest validated for your hardware.
+services:
+  api:
+    networks: !override [data, ingress, media]
+    environment:
+      RAG_OFFLINE: 'true'
+      INTELLIGENCE_PROVIDER: ollama
+      RAG_LLM_PROVIDER: ollama
+      RAG_LLM_MODEL: ${LOCAL_LLM_MODEL:-qwen3:8b}
+      RAG_EMBEDDING_PROVIDER: ollama
+      RAG_EMBEDDING_MODEL: ${LOCAL_EMBEDDING_MODEL:-bge-m3}
+      RAG_EMBEDDING_DIMENSIONS: ${LOCAL_EMBEDDING_DIMENSIONS:-1024}
+      RAG_LOCAL_URL: http://ollama:11434
+      RAG_EMBEDDING_LOCAL_URL: http://ollama:11434
+      OPENAI_API_KEY: ''
+  rag-worker:
+    networks: !override [data]
+    environment:
+      RAG_OFFLINE: 'true'
+      INTELLIGENCE_PROVIDER: ollama
+      RAG_LLM_PROVIDER: ollama
+      RAG_LLM_MODEL: ${LOCAL_LLM_MODEL:-qwen3:8b}
+      RAG_EMBEDDING_PROVIDER: ollama
+      RAG_EMBEDDING_MODEL: ${LOCAL_EMBEDDING_MODEL:-bge-m3}
+      RAG_EMBEDDING_DIMENSIONS: ${LOCAL_EMBEDDING_DIMENSIONS:-1024}
+      RAG_LOCAL_URL: http://ollama:11434
+      RAG_EMBEDDING_LOCAL_URL: http://ollama:11434
+      OPENAI_API_KEY: ''
+  intelligence-worker:
+    networks: !override [data]
+    environment:
+      INTELLIGENCE_PROVIDER: ollama
+      INTELLIGENCE_LOCAL_URL: http://ollama:11434
+      INTELLIGENCE_MODEL: ${LOCAL_LLM_MODEL:-qwen3:8b}
+      OPENAI_API_KEY: ''
+  live-analysis-worker:
+    networks: !override [data, media]
+    environment:
+      RAG_OFFLINE: 'true'
+      INTELLIGENCE_PROVIDER: ollama
+      RAG_LLM_PROVIDER: ollama
+      RAG_LLM_MODEL: ${LOCAL_LLM_MODEL:-qwen3:8b}
+      RAG_EMBEDDING_PROVIDER: ollama
+      RAG_EMBEDDING_MODEL: ${LOCAL_EMBEDDING_MODEL:-bge-m3}
+      RAG_EMBEDDING_DIMENSIONS: ${LOCAL_EMBEDDING_DIMENSIONS:-1024}
+      RAG_LOCAL_URL: http://ollama:11434
+      RAG_EMBEDDING_LOCAL_URL: http://ollama:11434
+      OPENAI_API_KEY: ''
+  ollama:
+    image: ${OLLAMA_IMAGE:?Set OLLAMA_IMAGE to your validated Ollama image tag or digest}
+    environment:
+      OLLAMA_NO_CLOUD: '1'
+    volumes:
+      - ${OLLAMA_MODELS_DIR:?Set OLLAMA_MODELS_DIR to the preloaded Ollama directory}:/root/.ollama:ro
+    networks: [data]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs: ['/tmp:size=256m,mode=1777']
+    restart: unless-stopped
+    mem_limit: ${OLLAMA_MEMORY_LIMIT:-12g}
+
+networks:
+  media:
+    internal: true

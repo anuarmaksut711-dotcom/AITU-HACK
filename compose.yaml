@@ -1,0 +1,271 @@
+name: aimeet
+
+x-api: &api
+  image: aimeet-api:local
+  build:
+    context: .
+    dockerfile: infra/docker/api.Dockerfile
+  environment: &api-env
+    DATABASE_URL: postgresql+psycopg://aimeet:${POSTGRES_PASSWORD:?Run scripts/init-local.py}@postgres:5432/aimeet
+    APP_ENV: ${APP_ENV:-development}
+    COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8787,http://127.0.0.1:8787}
+    INTELLIGENCE_PROVIDER: ${INTELLIGENCE_PROVIDER:-openai}
+    INTELLIGENCE_OPENAI_MODEL: ${INTELLIGENCE_OPENAI_MODEL:-gpt-5.6-luna}
+    INTELLIGENCE_REASONING_EFFORT: ${INTELLIGENCE_REASONING_EFFORT:-low}
+    INTELLIGENCE_MODEL: ${INTELLIGENCE_MODEL:-qwen3:8b}
+    INTELLIGENCE_LOCAL_URL: ${INTELLIGENCE_LOCAL_URL:-http://host.docker.internal:11434}
+    RAG_OFFLINE: ${RAG_OFFLINE:-false}
+    RAG_LLM_PROVIDER: ${RAG_LLM_PROVIDER:-openai}
+    RAG_LLM_MODEL: ${RAG_LLM_MODEL:-gpt-5.6-luna}
+    RAG_REASONING_EFFORT: ${RAG_REASONING_EFFORT:-max}
+    RAG_EMBEDDING_PROVIDER: ${RAG_EMBEDDING_PROVIDER:-openai}
+    RAG_EMBEDDING_MODEL: ${RAG_EMBEDDING_MODEL:-text-embedding-3-small}
+    RAG_EMBEDDING_DIMENSIONS: ${RAG_EMBEDDING_DIMENSIONS:-1536}
+    RAG_EMBEDDING_REVISION: ${RAG_EMBEDDING_REVISION:-1}
+    RAG_LOCAL_URL: ${RAG_LOCAL_URL:-http://host.docker.internal:11434}
+    OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    RAG_LOCAL_API_KEY: ${RAG_LOCAL_API_KEY:-}
+    RAG_EMBEDDING_LOCAL_URL: ${RAG_EMBEDDING_LOCAL_URL:-}
+    RAG_PROVIDER_TIMEOUT: ${RAG_PROVIDER_TIMEOUT:-180}
+    RAG_MAX_OUTPUT_TOKENS: ${RAG_MAX_OUTPUT_TOKENS:-16384}
+    RAG_CHILD_CHARS: ${RAG_CHILD_CHARS:-800}
+    RAG_PARENT_CHARS: ${RAG_PARENT_CHARS:-3200}
+    RAG_CONTEXT_CHARS: ${RAG_CONTEXT_CHARS:-18000}
+    RAG_CANDIDATE_COUNT: ${RAG_CANDIDATE_COUNT:-24}
+    RAG_TOP_K: ${RAG_TOP_K:-6}
+    RAG_NEIGHBOR_RADIUS: ${RAG_NEIGHBOR_RADIUS:-1}
+    RAG_MIN_SIMILARITY: ${RAG_MIN_SIMILARITY:-0.25}
+    RAG_JOB_LEASE_SECONDS: ${RAG_JOB_LEASE_SECONDS:-600}
+    RAG_JOB_MAX_ATTEMPTS: ${RAG_JOB_MAX_ATTEMPTS:-3}
+    AUDIO_DIR: /data/audio
+    STT_MODEL_PATH: /models/${STT_MODEL_DIR:-whisper-large-v3-turbo}
+    STT_CPU_THREADS: ${STT_CPU_THREADS:-4}
+    STT_DIARIZATION_ENABLED: ${STT_DIARIZATION_ENABLED:-true}
+    STT_DIARIZATION_MODEL_PATH: /models/${STT_DIARIZATION_MODEL_DIR:-speaker-diarization}
+    STT_DIARIZATION_THRESHOLD: ${STT_DIARIZATION_THRESHOLD:-0.9}
+    LIVEKIT_API_URL: http://livekit:7880
+    LIVEKIT_PUBLIC_URL: /livekit
+    LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-soyle-local}
+    LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:?Run make init}
+    LIVE_ANALYSIS_INTERVAL: ${LIVE_ANALYSIS_INTERVAL:-12}
+    LIVE_ANALYSIS_REASONING: ${LIVE_ANALYSIS_REASONING:-low}
+    LIVE_MAX_PARTICIPANTS: ${LIVE_MAX_PARTICIPANTS:-12}
+    LIVE_MAX_MINUTES: ${LIVE_MAX_MINUTES:-120}
+    HF_HUB_OFFLINE: '1'
+    HF_HUB_DISABLE_TELEMETRY: '1'
+    TRANSFORMERS_OFFLINE: '1'
+  networks: [data]
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  read_only: true
+  tmpfs: ['/tmp:size=64m,mode=1777']
+  init: true
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.6-pg17@sha256:cf134a767f474095eeba57e0117be8e568e011a63f33fbf252f14c9b760f8e6f
+    environment:
+      POSTGRES_USER: aimeet
+      POSTGRES_DB: aimeet
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run scripts/init-local.py}
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    networks: [data]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U aimeet -d aimeet]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+    shm_size: 128mb
+    mem_limit: 512m
+    logging: &logging
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
+
+  migrate:
+    <<: *api
+    command: [.venv/bin/alembic, upgrade, head]
+    depends_on:
+      postgres: {condition: service_healthy}
+    restart: 'no'
+    logging: *logging
+
+  bootstrap:
+    <<: *api
+    profiles: [tools]
+    environment:
+      <<: *api-env
+      BOOTSTRAP_EMAIL: ${BOOTSTRAP_EMAIL:?Set BOOTSTRAP_EMAIL}
+      BOOTSTRAP_PASSWORD: ${BOOTSTRAP_PASSWORD:?Set BOOTSTRAP_PASSWORD}
+    command: [.venv/bin/python, -m, aimeet_api.bootstrap]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: 'no'
+
+  api:
+    <<: *api
+    command: [.venv/bin/uvicorn, aimeet_api.main:app, --host, 0.0.0.0, --port, '8000', --no-access-log, --no-proxy-headers]
+    networks: [data, ingress, ai-egress, media]
+    extra_hosts: [host.docker.internal:host-gateway]
+    volumes: [audio-data:/data/audio]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, .venv/bin/python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/ready', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+    stop_grace_period: 30s
+    mem_limit: 512m
+    logging: *logging
+
+  transcription-worker:
+    <<: *api
+    command: [.venv/bin/python, -m, aimeet_api.modules.transcription.worker]
+    volumes:
+      - audio-data:/data/audio:ro
+      - ./models:/models:ro
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+    stop_grace_period: 15s
+    mem_limit: ${STT_MEMORY_LIMIT:-4g}
+    cpus: ${STT_CPU_LIMIT:-4}
+    pids_limit: 128
+    logging: *logging
+
+  rag-worker:
+    <<: *api
+    command: [.venv/bin/python, -m, aimeet_api.modules.rag.worker]
+    networks: [data, ai-egress]
+    extra_hosts: [host.docker.internal:host-gateway]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+    stop_grace_period: 30s
+    mem_limit: 512m
+    pids_limit: 128
+    logging: *logging
+
+  livekit:
+    image: livekit/livekit-server:v1.13.6@sha256:e37d68f172556d02aa77968b9fc55ef481468c0315fa38e4fa6c56ce72e3a815
+    environment:
+      LIVEKIT_CONFIG: |
+        port: 7880
+        bind_addresses: ["0.0.0.0"]
+        keys:
+          ${LIVEKIT_API_KEY:-soyle-local}: ${LIVEKIT_API_SECRET:?Run make init}
+        rtc:
+          tcp_port: 7881
+          udp_port: 7882
+          use_external_ip: false
+          node_ip: ${LIVEKIT_NODE_IP:-127.0.0.1}
+          enable_loopback_candidate: false
+        room:
+          auto_create: false
+          departure_timeout: 300
+        logging:
+          level: warn
+    ports:
+      - '127.0.0.1:7881:7881/tcp'
+      - '127.0.0.1:7882:7882/udp'
+    networks: [media]
+    restart: unless-stopped
+    mem_limit: 512m
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    logging: *logging
+
+  live-speech-worker:
+    <<: *api
+    command: [.venv/bin/python, -m, aimeet_api.modules.live.worker, speech]
+    volumes:
+      - audio-data:/data/audio
+      - ./models:/models:ro
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+    stop_grace_period: 15s
+    mem_limit: ${STT_MEMORY_LIMIT:-4g}
+    cpus: ${STT_CPU_LIMIT:-4}
+    pids_limit: 128
+    logging: *logging
+
+  live-analysis-worker:
+    <<: *api
+    command: [.venv/bin/python, -m, aimeet_api.modules.live.worker, analysis]
+    networks: [data, ai-egress, media]
+    extra_hosts: [host.docker.internal:host-gateway]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+    mem_limit: 512m
+    logging: *logging
+
+  live-recording-worker:
+    <<: *api
+    command: [.venv/bin/python, -m, aimeet_api.modules.live.worker, recording]
+    networks: [data]
+    volumes: [audio-data:/data/audio]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+    stop_grace_period: 30s
+    mem_limit: 512m
+    cpus: 2
+    pids_limit: 128
+    logging: *logging
+
+  intelligence-worker:
+    <<: *api
+    command: [.venv/bin/python, -m, aimeet_api.modules.intelligence.worker]
+    networks: [data, ai-egress]
+    extra_hosts: [host.docker.internal:host-gateway]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+    stop_grace_period: 30s
+    mem_limit: 512m
+    pids_limit: 128
+    logging: *logging
+
+  web:
+    image: aimeet-web:local
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+    ports: ['127.0.0.1:${WEB_PORT:-8787}:8080']
+    networks: [edge, ingress, media]
+    depends_on:
+      api: {condition: service_healthy}
+      live-speech-worker: {condition: service_started}
+      live-analysis-worker: {condition: service_started}
+      live-recording-worker: {condition: service_started}
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs: ['/tmp:size=32m,mode=1777']
+    healthcheck:
+      test: [CMD, wget, -q, --spider, 'http://127.0.0.1:8080/healthz']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    mem_limit: 128m
+    logging: *logging
+
+volumes:
+  postgres-data:
+  audio-data:
+
+networks:
+  media:
+  ai-egress:
+  edge:
+  ingress:
+    internal: true
+  data:
+    internal: true

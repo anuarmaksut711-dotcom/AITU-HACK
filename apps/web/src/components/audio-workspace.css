@@ -1,0 +1,30 @@
+.audio-workspace { width: 100%; min-width: 0; }
+.audio-processing-header { display: flex; align-items: center; gap: 14px; padding: 18px 0; }
+.audio-processing-icon { width: 44px; height: 44px; display: grid; place-items: center; flex: 0 0 auto; background: #e5eee6; color: #215c49; border-radius: 50%; }
+.audio-processing-icon.is-processing svg { animation: audio-breathe 1.8s ease-in-out infinite; }
+.audio-processing-copy { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+.audio-processing-step { color: #617166; font-size: 12px; white-space: nowrap; }
+.audio-source { margin: 18px 0 12px; }
+.audio-source audio { display: block; width: 100%; height: 38px; }
+.audio-workspace-tabs { margin: 20px 0; }
+.audio-transcript-feed { max-height: 60dvh; min-height: 240px; overflow-y: auto; scrollbar-gutter: stable; }
+.audio-transcript-segment { display: grid; grid-template-columns: 60px minmax(0, 1fr); gap: 18px; padding: 18px 4px; border-bottom: 1px solid #e6e8e0; animation: audio-arrive 280ms ease-out both; }
+.audio-transcript-segment time { color: #617166; font-size: 13px; padding-top: 4px; font-variant-numeric: tabular-nums; }
+.audio-transcript-segment p { font-size: 17px; line-height: 1.7; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.audio-feed-empty { min-height: 260px; max-width: 440px; margin: auto; padding: 36px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; }
+.audio-feed-empty > svg { color: #477d60; }
+.audio-feed-continuation { padding: 20px 4px; }
+.audio-insight { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 16px; border: 1px solid #d8ddd5; border-radius: 12px; padding: 22px; margin-bottom: 12px; animation: audio-arrive 280ms ease-out both; }
+.audio-insight > svg { color: #477d60; margin-top: 3px; }
+.audio-insight details { margin-top: 12px; font-size: 13px; color: #617166; }
+.audio-insight summary { cursor: pointer; }
+.audio-insight blockquote { margin: 12px 0 0; padding-left: 12px; border-left: 2px solid #93bea6; overflow-wrap: anywhere; }
+@keyframes audio-breathe { 50% { opacity: .4; transform: scaleY(.7); } }
+@keyframes audio-arrive { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 600px) {
+  .audio-transcript-segment { grid-template-columns: 42px minmax(0, 1fr); gap: 10px; }
+  .audio-transcript-segment p { font-size: 15px; }
+  .audio-processing-step { display: none; }
+  .audio-insight { padding: 16px 12px; gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .audio-workspace * { animation: none !important; } }
